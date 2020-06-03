@@ -1,24 +1,27 @@
 import numpy as np
 from scipy import fftpack
 from scipy.signal import medfilt
-def eliminar_ruido(frame,n,m):
 
-    freq=28
-    # Implemente esta función
-    # ESTE CONDICION ES MOMENTANEA, ES PARA PROBAR CON FRAMES ESPECIFICOS
-    if n==m:
-        #Borra ruido impulsivo
-        frame=medfilt(frame, 5)
-        #Borra ruido periodico
-        frame_freq = fftpack.fftshift(fftpack.fft2(frame))
-        frame_freq[230-freq:260-freq,
-                   418:427] = 0
-        frame_freq[230+freq:260+freq,
-                   418:427] = 0
-        frame_limpio = np.abs(fftpack.ifft2(fftpack.ifftshift(frame_freq)))
-    else:
-        frame_limpio=frame
+def elimina_ruido_impulsivo(freq, frame): 
+    frame = medfilt(frame, 5)
+    
+    return frame
 
+def elimina_ruido_periodico(freq, frame): 
+    frame_freq = fftpack.fftshift(fftpack.fft2(frame))
+    frame_freq[230-freq:260-freq, 418:427] = 0
+    frame_freq[230+freq:260+freq, 418:427] = 0
+    frame_limpio = np.abs(fftpack.ifft2(fftpack.ifftshift(frame_freq)))
+        
+    return frame_limpio
+
+
+def eliminar_ruido(frame):
+
+    freq = 28
+    frame = elimina_ruido_impulsivo(freq, frame)
+    frame_limpio = elimina_ruido_periodico(freq, frame)
+    
     return frame_limpio
 
 def transmisor(frame):

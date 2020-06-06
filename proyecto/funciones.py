@@ -25,9 +25,8 @@ def eliminar_ruido(frame):
     return frame_limpio
   
 
-def transforma_frame(frame): 
+def transforma_frame(frame, frame_size): 
     DCT2 = lambda g, norm='ortho': fftpack.dct( fftpack.dct(g, axis=0, norm=norm), axis=1, norm=norm)
-    frame_size = frame.shape
     dct_matrix = np.zeros(shape = frame_size)
 
     for i in range(0, frame_size[0], 8):
@@ -36,8 +35,12 @@ def transforma_frame(frame):
     
     return dct_matrix
 
-def cuantiza_frame(frame, frame_min, q):
-    return frame_min + q/2 + np.floor((frame - frame_min) / q) * q
+def cuantiza_frame(frame, size, Q):
+    for i in range(0, size[0], 8):
+           for j in range(0, size[1], 8): 
+                frame[i:(i+8), j:(j+8)] /= Q 
+    
+    return frame
 
 def count(frame):
     f = np.ravel(frame.astype(np.uint8))
@@ -61,8 +64,22 @@ def huffman(frame):
 
     
 def transmisor(frame):
-    frame_transformado = transforma_frame(frame)
-    frame_cuantizado = cuantiza_frame(frame_transformado, frame_transformado.min(), q = 0.01)
+    size = frame.shape
+    Q = np.array([[3,2,2,3,5,8,10,12],
+                  [2,2,3,4,5,11,11,13],
+                  [3,2,3,5,8,11,13,11],
+                  [3,3,4,6,10,17,15,12],
+                  [3,4,7,11,13,21,20,15],
+                  [5,7,10,12,15,20,21,17],
+                  [9,12,15,17,20,23,23,19],
+                  [14,17,18,19,21,19,20,19]])
+    
+    frame_transformado = transforma_frame(frame, size)
+    print("Antes de cuantizar: ",frame_transformado)
+    
+    frame_cuantizado = cuantiza_frame(frame_transformado, size, Q)
+    print("Después de cuantizar: ",frame_cuantizado)
+    
     
     h=huffman(frame_cuantizado)
     frame_comprimido = frame

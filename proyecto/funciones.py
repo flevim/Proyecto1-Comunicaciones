@@ -38,7 +38,7 @@ def transforma_frame(frame, frame_size):
 def cuantiza_frame(frame, size, Q):
     for i in range(0, size[0], 8):
            for j in range(0, size[1], 8): 
-                frame[i:(i+8), j:(j+8)] /= Q 
+                frame[i:(i+8), j:(j+8)] = np.round(frame[i:(i+8), j:(j+8)] / Q) 
     
     return frame
 

@@ -35,12 +35,24 @@ def transforma_frame(frame, frame_size):
     
     return dct_matrix
 
+''' zig zag sort, falta completar enviando desde función transmisor el bloque indicado 
+def zigzag_sort(bloque_frame, size):
+    def compare(xy):
+        x, y = xy
+        return (x + y, -y if (x + y) % 2 else y)
+    
+    largo = range(size)
+    return {index: n for n, index in enumerate(sorted(((x, y) for x in largo for y in largo), key=compare))}
+''' 
+
 def cuantiza_frame(frame, size, Q):
     for i in range(0, size[0], 8):
            for j in range(0, size[1], 8): 
-                frame[i:(i+8), j:(j+8)] = np.round(frame[i:(i+8), j:(j+8)] / Q) 
-    
+                frame[i:(i+8), j:(j+8)] = np.round(frame[i:(i+8), j:(j+8)] / Q)
+                
     return frame
+
+
 
 def count(frame):
     f = np.ravel(frame.astype(np.uint8))
@@ -59,9 +71,19 @@ def huffman(frame):
         heapq.heappush(dendograma, [lo[0] + hi[0]] + lo[1:] + hi[1:])
     dendograma = sorted(heapq.heappop(dendograma)[1:])
     dendograma = {simbolo : codigo for simbolo, codigo in dendograma} 
+    
     return dendograma
     #display(dendograma)
 
+def codifica_frame(frame):
+    #Aquí convertir el dendograma del algoritmo de huffman en tira binaria.
+    tira_codificada = ""
+    dendograma = huffman(frame)
+    
+    return tira_codificada
+            
+    #print(tira_codificada[:1500])
+    
     
 def transmisor(frame):
     size = frame.shape
@@ -75,24 +97,17 @@ def transmisor(frame):
                   [14,17,18,19,21,19,20,19]])
     
     frame_transformado = transforma_frame(frame, size)
-    print("Antes de cuantizar: ",frame_transformado)
     
     frame_cuantizado = cuantiza_frame(frame_transformado, size, Q)
-    print("Después de cuantizar: ",frame_cuantizado)
+  
+    frame_codificado = codifica_frame(frame_cuantizado)
     
-    
-    h=huffman(frame_cuantizado)
     frame_comprimido = frame
     
     return frame_comprimido
 
 
 def receptor(frame_comprimido):
-    # Implemente los bloques de
-    #
-    # Decodificación
-    #
-    # Transformación inversa
-    #
+    #Al convertirlo a tira binaria facilmente lo decodifico.
     frame = frame_comprimido
     return frame

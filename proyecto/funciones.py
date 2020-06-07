@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import cv2
 from collections import Counter
 import heapq
-
+import re
 def elimina_ruido_impulsivo(frame): 
     return medfilt(frame, 5)
     
@@ -35,16 +35,16 @@ def transforma_frame(frame, frame_size):
     
     return dct_matrix
 
-''' zig zag sort, falta completar enviando desde función transmisor el bloque indicado 
+"""#zig zag sort, falta completar enviando desde función transmisor el bloque indicado 
 def zigzag_sort(bloque_frame, size):
     def compare(xy):
         x, y = xy
         return (x + y, -y if (x + y) % 2 else y)
     
-    largo = range(size)
+    largo = range(size[0])
+    display(bloque_frame)
     return {index: n for n, index in enumerate(sorted(((x, y) for x in largo for y in largo), key=compare))}
-''' 
-
+"""
 def cuantiza_frame(frame, size, Q):
     for i in range(0, size[0], 8):
            for j in range(0, size[1], 8): 
@@ -79,10 +79,14 @@ def codifica_frame(frame):
     #Aquí convertir el dendograma del algoritmo de huffman en tira binaria.
     tira_codificada = ""
     dendograma = huffman(frame)
-    
+
+    for fila in frame:
+        for i in range(len(fila)):
+            tira_codificada += dendograma[fila[i].astype(np.uint8)]
+    display(tira_codificada[:1000])
+
     return tira_codificada
             
-    #print(tira_codificada[:1500])
     
     
 def transmisor(frame):
@@ -99,9 +103,12 @@ def transmisor(frame):
     frame_transformado = transforma_frame(frame, size)
     
     frame_cuantizado = cuantiza_frame(frame_transformado, size, Q)
-  
-    frame_codificado = codifica_frame(frame_cuantizado)
     
+    display(size)
+    display(frame_cuantizado)
+    
+    frame_codificado = codifica_frame(frame_cuantizado)
+
     frame_comprimido = frame
     
     return frame_comprimido

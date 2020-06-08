@@ -35,16 +35,7 @@ def transforma_frame(frame, frame_size):
     
     return dct_matrix
 
-"""#zig zag sort, falta completar enviando desde función transmisor el bloque indicado 
-def zigzag_sort(bloque_frame, size):
-    def compare(xy):
-        x, y = xy
-        return (x + y, -y if (x + y) % 2 else y)
-    
-    largo = range(size[0])
-    display(bloque_frame)
-    return {index: n for n, index in enumerate(sorted(((x, y) for x in largo for y in largo), key=compare))}
-"""
+
 def cuantiza_frame(frame, size, Q):
     for i in range(0, size[0], 8):
            for j in range(0, size[1], 8): 
@@ -71,21 +62,23 @@ def huffman(frame):
         heapq.heappush(dendograma, [lo[0] + hi[0]] + lo[1:] + hi[1:])
     dendograma = sorted(heapq.heappop(dendograma)[1:])
     dendograma = {simbolo : codigo for simbolo, codigo in dendograma} 
-    
+
     return dendograma
     #display(dendograma)
 
 def codifica_frame(frame):
-    #Aquí convertir el dendograma del algoritmo de huffman en tira binaria.
+    header = []
     tira_codificada = ""
     dendograma = huffman(frame)
-
+    
     for fila in frame:
         for i in range(len(fila)):
             tira_codificada += dendograma[fila[i].astype(np.uint8)]
-    display(tira_codificada[:1000])
-
-    return tira_codificada
+    #display(tira_codificada)
+    
+    header.extend([dendograma, tira_codificada])
+    
+    return header
             
     
     
@@ -108,13 +101,17 @@ def transmisor(frame):
     display(frame_cuantizado)
     
     frame_codificado = codifica_frame(frame_cuantizado)
-
-    frame_comprimido = frame
+    
+    frame_comprimido = frame_codificado
     
     return frame_comprimido
 
 
 def receptor(frame_comprimido):
-    #Al convertirlo a tira binaria facilmente lo decodifico.
+    dendograma = frame_comprimido[0]
+    dendograma_inverso =  {codigo: simbolo for simbolo, codigo in dendograma.items()}
+    
+    display(dendograma_inverso)
     frame = frame_comprimido
+    
     return frame

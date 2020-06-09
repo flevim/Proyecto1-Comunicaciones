@@ -6,6 +6,7 @@ import cv2
 from collections import Counter
 import heapq
 import re
+
 def elimina_ruido_impulsivo(frame): 
     return medfilt(frame, 5)
     
@@ -42,6 +43,15 @@ def cuantiza_frame(frame, size, Q):
                 frame[i:(i+8), j:(j+8)] = np.round(frame[i:(i+8), j:(j+8)] / Q)
                 
     return frame
+
+def descuantiza_frame(frame, size):
+    IDCT2 = lambda G, norm='ortho': fftpack.idct( fftpack.idct(G, axis=0, norm=norm), axis=1, norm=norm)
+    im_dct = np.zeros(shape = size)
+    for i in range(0, size[0], 8):
+           for j in range(0, size[1], 8): 
+                im_dct[i:(i+8), j:(j+8)] = IDCT2(frame[i:(i+8),j:(j+8)])
+                
+    return im_dct
 
 
 
@@ -83,6 +93,7 @@ def codifica_frame(frame):
     
     
 def transmisor(frame):
+
     size = frame.shape
     Q = np.array([[3,2,2,3,5,8,10,12],
                   [2,2,3,4,5,11,11,13],
@@ -93,25 +104,44 @@ def transmisor(frame):
                   [9,12,15,17,20,23,23,19],
                   [14,17,18,19,21,19,20,19]])
     
+    print("Antes: ",frame)
     frame_transformado = transforma_frame(frame, size)
     
     frame_cuantizado = cuantiza_frame(frame_transformado, size, Q)
+    #print(frame_cuantizado)
     
-    display(size)
-    display(frame_cuantizado)
+   
+    frame_original = descuantiza_frame(frame_cuantizado, size)
+    print("Despues: ",frame_original)
+    #frame_codificado = codifica_frame(frame_cuantizado)
     
-    frame_codificado = codifica_frame(frame_cuantizado)
-    
-    frame_comprimido = frame_codificado
+    frame_comprimido = frame_original
     
     return frame_comprimido
 
 
 def receptor(frame_comprimido):
+    '''
+    codigo = ""
+    texto = []
     dendograma = frame_comprimido[0]
     dendograma_inverso =  {codigo: simbolo for simbolo, codigo in dendograma.items()}
+    new_array = np.zeros((480,848), dtype=np.int8)
     
-    display(dendograma_inverso)
+    #print(dendograma_inverso)
+    
+    for i in frame_comprimido[1]:
+        codigo += i
+        if codigo in dendograma_inverso:
+            texto.append(dendograma_inverso[codigo])
+            codigo = ""
+    
+       
+    arr = np.array(texto)
+    arr = np.array_split(arr, 480)
+    print(arr)
+    '''
+    
     frame = frame_comprimido
     
     return frame
